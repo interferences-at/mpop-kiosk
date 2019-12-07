@@ -14,6 +14,7 @@ function createWindow () {
     fullscreen: true, // FIXME: be able to toggle from GUI
     frame: false, // Hide the menubar TODO: be able to configure
     webPreferences: {
+      nodeIntegration: true, // Allows us to use any NodeJS module
       preload: path.join(__dirname, 'preload.js')
     }
   });
