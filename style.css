@@ -9,6 +9,11 @@
     height: 100%;
     width: 100%;
     /* Hide the cursor - for touch screens */
+    /*
+     * Temporarily disabled.
+     * FIXME: We should make this optional - with an env var to set it.
+     *
     cursor: none;
+    */
 }
 
