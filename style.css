@@ -1,0 +1,14 @@
+/**
+ * The main div for our app.
+ */
+#app {
+    /* Use 100% of the screen. */
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    /* Hide the cursor - for touch screens */
+    cursor: none;
+}
+
