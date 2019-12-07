@@ -12,6 +12,7 @@ function createWindow () {
     width: 800,
     height: 600,
     fullscreen: true, // FIXME: be able to toggle from GUI
+    frame: false, // Hide the menubar TODO: be able to configure
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     }
