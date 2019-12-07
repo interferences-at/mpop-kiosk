@@ -1,0 +1,24 @@
+{
+  "name": "mpop-kiosk",
+  "version": "0.1.0",
+  "description": "Bornes avec les questionnaires - projet MPOP",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/interferences-at/mpop-kiosk.git"
+  },
+  "keywords": [
+    "serialport",
+    "react",
+    "art"
+  ],
+  "author": "Alexandre Quessy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/interferences-at/mpop-kiosk/issues"
+  },
+  "homepage": "https://github.com/interferences-at/mpop-kiosk#readme"
+}
