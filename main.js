@@ -52,7 +52,7 @@ app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
     app.quit();
   }
-})
+});
 
 app.on('activate', function () {
   // On macOS it's common to re-create a window in the app when the
@@ -60,8 +60,72 @@ app.on('activate', function () {
   if (mainWindow === null) {
     createWindow();
   }
-})
+});
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+
+const socketio = require('socket.io')
+const SerialPort = require('serialport');
+const Readline = require('@serialport/parser-readline')
+const EventEmitter = require('events');
+
+// Constants
+const WEBSOCKET_PORT = 18188;
+
+class ReadRfidEvent extends EventEmitter {
+  onReadSomeRfid(data) {
+    this.emit('read', data);
+  }
+}
+
+let readEvent = new ReadRfidEvent();
+
+// Global objects
+const rfidReader = new SerialPort('/dev/ttyUSB0', { autoOpen: false });
+let websocketServer = socketio(WEBSOCKET_PORT);
+
+rfidReader.open(function (err) {
+  if (err) {
+    return console.log('Error opening port: ', err.message);
+  }
+
+  // Because there's no callback to write, write errors will be emitted on the port:
+  rfidReader.write('main screen turn on');
+})
+
+// The open event is always emitted
+rfidReader.on('open', function() {
+  // open logic
+  console.log('Opened rfid reader.');
+});
+
+// Read data that is available but keep the stream in "paused mode"
+rfidReader.on('readable', function () {
+  let data = rfidReader.read();
+  console.log('Data:', data);
+  readEvent.onReadSomeRfid(data);
+});
+
+// Switches the port into "flowing mode"
+rfidReader.on('data', function (data) {
+  console.log('Data:', data);
+})
+
+// Pipe the data into another stream (like a parser or standard out)
+const lineStream = rfidReader.pipe(new Readline());
+
+websocketServer.on('connection', function (socket) {
+  // socket.broadcast.emit('user connected');
+  socket.on('message', function () {
+    // Nothing to do
+  });
+  socket.on('disconnect', function () {
+    // Nothing to do
+  });
+  readEvent.on('read', (data) => {
+    socket.broadcast.emit(data);
+  });
+});
 
