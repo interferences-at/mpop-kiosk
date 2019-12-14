@@ -69,10 +69,12 @@ app.on('activate', function () {
 // code. You can also put them in separate files and require them here.
 
 
+const express = require('express');
 const socketio = require('socket.io')
 const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline')
 const EventEmitter = require('events');
+const http = require('http');
 
 // Constants
 const WEBSOCKET_PORT = 18188;
@@ -87,7 +89,9 @@ let readEvent = new ReadRfidEvent();
 
 // Global objects
 const rfidReader = new SerialPort('/dev/ttyUSB0', { autoOpen: false });
-let websocketServer = socketio(WEBSOCKET_PORT);
+let expressServer = express();
+let httpServer = http.createServer(expressServer);
+let websocketServer = socketio(httpServer);
 
 rfidReader.open(function (err) {
   if (err) {
@@ -135,5 +139,9 @@ websocketServer.on('connection', function (socket) {
     console.log('broadcast some data to all websocket clients');
     socket.broadcast.emit(data);
   });
+});
+
+httpServer.listen(WEBSOCKET_PORT, function () {
+  console.log('websocket server listening on port ' + WEBSOCKET_PORT);
 });
 
