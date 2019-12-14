@@ -2,43 +2,38 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { w3cwebsocket as W3CWebSocket } from "websocket";
 // import serialport from 'serialport';
+const websocketClient = new W3CWebSocket('ws://localhost:18188');
 
 /**
  * The main App component.
  */
 class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      lastRfidRead: ' -- '
+    };
+  }
 
-  // Methods:
-  // listSerialPorts() {
-  //   let ret = 'no serial port data';
-  //   console.log('Listing serial ports');
-  //   serialport.list((err, ports) => {
-  //     ret = '';
-  //     console.log('ports', ports);
-  //     if (err) {
-  //       console.err('Error listing serial ports: ' + err.message);
-  //     }
-  //     else {
-  //       if (ports.length == 0) {
-  //         console.log('No ports listed.');
-  //         ret += 'No ports';
-  //       } else {
-  //         for (let i = 0; i = ports.length; i ++) {
-  //           console.log('Found port ' + port);
-  //           ret += 'Found port ' + port + '\n';
-  //         }
-  //       }
-  //     }
-  //   });
-  //   const ret = 'Hello from React';
-  //   return ret;
-  // };
+  componentWillMount() {
+    websocketClient.onopen = () => {
+      console.log('WebSocket Client Connected');
+    };
+    websocketClient.onmessage = (message) => {
+      console.log(message);
+      this.setState({
+        lastRfidRead: message
+      });
+    };
+  }
 
   render() {
     return (
       <div className="root">
         <h1>Hello</h1>
+        <pre>{ this.state.lastRfidRead }</pre>
       </div>
      );
   }

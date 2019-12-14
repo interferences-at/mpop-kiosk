@@ -19,6 +19,7 @@ function createWindow () {
     webPreferences: {
       devTools: isDevMode,
       defaultEncoding: 'UTF-8',
+      allowRunningInsecureContent: true,
       zoomFactor: 1.0, // default is 1.0
       nodeIntegration: true, // Allows us to use any NodeJS module
       preload: path.join(__dirname, 'preload.js')
@@ -29,7 +30,9 @@ function createWindow () {
   mainWindow.loadFile('index.html');
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  if (isDevMode) {
+    mainWindow.webContents.openDevTools()
+  }
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -118,13 +121,18 @@ const lineStream = rfidReader.pipe(new Readline());
 
 websocketServer.on('connection', function (socket) {
   // socket.broadcast.emit('user connected');
+  console.log('websocket client connected');
+
   socket.on('message', function () {
     // Nothing to do
+    console.log('websocket: received message from client.');
   });
   socket.on('disconnect', function () {
-    // Nothing to do
+    console.log('websocket client disconnected');
   });
+
   readEvent.on('read', (data) => {
+    console.log('broadcast some data to all websocket clients');
     socket.broadcast.emit(data);
   });
 });

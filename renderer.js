@@ -7,16 +7,17 @@
 
 const electron = require('electron');
 const currentWindow = electron.remote.getCurrentWindow();
-const setWindowFullscreen = (value) => {
-  currentWindow.setFullScreen(value);
-};
 
-currentWindow.once('did-finish-load', () => {
-  setWindowFullScreen(true);
-});
-
-
-document.addEventListener('DOMContentLoaded', () => {
-  setWindowFullScreen(true);
-});
+// const setWindowFullscreen = (value) => {
+//   currentWindow.setFullScreen(value);
+// };
+// 
+// currentWindow.once('did-finish-load', () => {
+//   setWindowFullScreen(true);
+// });
+// 
+// 
+// document.addEventListener('DOMContentLoaded', () => {
+//   setWindowFullScreen(true);
+// });
 
