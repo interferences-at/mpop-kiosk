@@ -2,9 +2,8 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { w3cwebsocket as W3CWebSocket } from "websocket";
+// import { w3cwebsocket as W3CWebSocket } from "websocket";
 // import serialport from 'serialport';
-const websocketClient = new W3CWebSocket('ws://localhost:18188');
 
 /**
  * The main App component.
@@ -15,13 +14,14 @@ class App extends React.Component {
     this.state = {
       lastRfidRead: ' -- '
     };
+    this.websocketClient = new WebSocket('ws://localhost:18188/websocket');
   }
 
   componentWillMount() {
-    websocketClient.onopen = () => {
+    this.websocketClient.onopen = () => {
       console.log('WebSocket Client Connected');
     };
-    websocketClient.onmessage = (message) => {
+    this.websocketClient.onmessage = (message) => {
       console.log(message);
       this.setState({
         lastRfidRead: message

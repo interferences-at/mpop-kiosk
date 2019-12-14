@@ -91,7 +91,9 @@ let readEvent = new ReadRfidEvent();
 const rfidReader = new SerialPort('/dev/ttyUSB0', { autoOpen: false });
 let expressServer = express();
 let httpServer = http.createServer(expressServer);
-let websocketServer = socketio(httpServer);
+let websocketServer = socketio(httpServer, {
+  path: 'websocket',
+});
 
 rfidReader.open(function (err) {
   if (err) {
@@ -143,5 +145,6 @@ websocketServer.on('connection', function (socket) {
 
 httpServer.listen(WEBSOCKET_PORT, function () {
   console.log('websocket server listening on port ' + WEBSOCKET_PORT);
+  console.log('ws://localhost:' + WEBSOCKET_PORT + '/websocket');
 });
 
