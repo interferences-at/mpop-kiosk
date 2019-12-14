@@ -7,6 +7,9 @@ const path = require('path');
 let mainWindow;
 
 function createWindow () {
+  const isDevMode = process.env.NODE_ENV === 'development';
+  console.log('isDevMode: ' + isDevMode);
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 800,
@@ -14,6 +17,9 @@ function createWindow () {
     fullscreen: true, // FIXME: be able to toggle from GUI
     frame: false, // Hide the menubar TODO: be able to configure
     webPreferences: {
+      devTools: isDevMode,
+      defaultEncoding: 'UTF-8',
+      zoomFactor: 1.0, // default is 1.0
       nodeIntegration: true, // Allows us to use any NodeJS module
       preload: path.join(__dirname, 'preload.js')
     }

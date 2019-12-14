@@ -1,6 +1,7 @@
 #!/bin/bash
 cd $(dirname ${0})
 cd ..
+set -o verbose
 
 BABEL=./node_modules/.bin/babel
 BROWSERIFY=./node_modules/.bin/browserify
