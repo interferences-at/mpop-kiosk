@@ -37,8 +37,10 @@
     "express": "^4.17.1",
     "http": "0.0.0",
     "react": "^16.12.0",
+    "redis": "^2.8.0",
     "serialport": "^8.0.5",
     "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.0",
     "watch": "^1.0.2",
     "websocket": "^1.0.31"
   },

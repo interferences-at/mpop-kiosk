@@ -2,6 +2,7 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
@@ -72,9 +73,17 @@ app.on('activate', function () {
 const express = require('express');
 const socketio = require('socket.io')
 const SerialPort = require('serialport');
-const Readline = require('@serialport/parser-readline')
+const ParserReadline = require('@serialport/parser-readline')
 const EventEmitter = require('events');
 const http = require('http');
+const redis = require('redis');
+
+const redisClient = redis.createClient();
+
+redisClient.on("error", function (err) {
+  console.log("Redis error: " + err);
+});
+
 
 // Constants
 const WEBSOCKET_PORT = 18188;
@@ -85,15 +94,24 @@ class ReadRfidEvent extends EventEmitter {
   }
 }
 
-let readEvent = new ReadRfidEvent();
+// let readEvent = new ReadRfidEvent();
 
 // Global objects
 const rfidReader = new SerialPort('/dev/ttyUSB0', { autoOpen: false });
 let expressServer = express();
 let httpServer = http.createServer(expressServer);
 let websocketServer = socketio(httpServer, {
-  path: 'websocket',
+  path: '/pubsub',
 });
+httpServer.listen(WEBSOCKET_PORT, function() {
+  console.log('listening on port ' + WEBSOCKET_PORT);
+});
+
+// websocketServer.listen(WEBSOCKET_PORT);
+
+// let websocketServer = socketio('localhosocket ', WEBSOCKET_PORT, {
+//   path: '/pubsub',
+// });
 
 rfidReader.open(function (err) {
   if (err) {
@@ -110,41 +128,50 @@ rfidReader.on('open', function() {
   console.log('Opened rfid reader.');
 });
 
-// Read data that is available but keep the stream in "paused mode"
-rfidReader.on('readable', function () {
-  let data = rfidReader.read();
-  console.log('Data:', data);
-  readEvent.onReadSomeRfid(data);
-});
-
-// Switches the port into "flowing mode"
-rfidReader.on('data', function (data) {
-  console.log('Data:', data);
-})
+// // Read data that is available but keep the stream in "paused mode"
+// rfidReader.on('readable', function () {
+//   let data = rfidReader.read();
+//   console.log('Data:', data);
+//   // readEvent.onReadSomeRfid(data);
+//   let rfidData = data;
+// });
+// 
+// // Switches the port into "flowing mode"
+// rfidReader.on('data', function (data) {
+//   console.log('Data:', data);
+// })
 
 // Pipe the data into another stream (like a parser or standard out)
-const lineStream = rfidReader.pipe(new Readline());
+const parserReadline = new ParserReadline();
+const lineStream = rfidReader.pipe(parserReadline);
 
-websocketServer.on('connection', function (socket) {
-  // socket.broadcast.emit('user connected');
-  console.log('websocket client connected');
-
-  socket.on('message', function () {
-    // Nothing to do
-    console.log('websocket: received message from client.');
-  });
-  socket.on('disconnect', function () {
-    console.log('websocket client disconnected');
-  });
-
-  readEvent.on('read', (data) => {
-    console.log('broadcast some data to all websocket clients');
-    socket.broadcast.emit(data);
-  });
+parserReadline.on('data', function (line) {
+  console.log('RFID data:', line);
+  redisClient.set("tag", line);
+  let tagValue = line.replace(/[\W_]+/g, ''); // Remove characters that are not word-characters
+  websocketServer.emit('tag', tagValue);
 });
 
-httpServer.listen(WEBSOCKET_PORT, function () {
-  console.log('websocket server listening on port ' + WEBSOCKET_PORT);
-  console.log('ws://localhost:' + WEBSOCKET_PORT + '/websocket');
-});
+// websocketServer.on('connection', function (socket) {
+//   // socket.broadcast.emit('user connected');
+//   console.log('websocket client connected');
+// 
+//   socket.on('message', function () {
+//     // Nothing to do
+//     console.log('websocket: received message from client.');
+//   });
+//   socket.on('disconnect', function () {
+//     console.log('websocket client disconnected');
+//   });
+// 
+//   readEvent.on('read', (data) => {
+//     console.log('broadcast some data to all websocket clients');
+//     socket.broadcast.emit(data);
+//   });
+// });
+
+// httpServer.listen(WEBSOCKET_PORT, function () {
+//   console.log('websocket server listening on port ' + WEBSOCKET_PORT);
+//   console.log('ws://localhost:' + WEBSOCKET_PORT + '/websocket');
+// });
 
