@@ -2,10 +2,9 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow;
+var mainWindow;
 
 function createWindow () {
   const isDevMode = process.env.NODE_ENV === 'development';
@@ -69,109 +68,89 @@ app.on('activate', function () {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 
-
 const express = require('express');
 const socketio = require('socket.io')
 const SerialPort = require('serialport');
 const ParserReadline = require('@serialport/parser-readline')
-const EventEmitter = require('events');
+// const EventEmitter = require('events');
 const http = require('http');
-const redis = require('redis');
-
-const redisClient = redis.createClient();
-
-redisClient.on("error", function (err) {
-  console.log("Redis error: " + err);
-});
-
+const fs = require('fs');
 
 // Constants
 const WEBSOCKET_PORT = 18188;
 
-class ReadRfidEvent extends EventEmitter {
-  onReadSomeRfid(data) {
-    this.emit('read', data);
+// class ReadRfidEvent extends EventEmitter {
+//   onReadSomeRfid(data) {
+//     this.emit('read', data);
+//   }
+// }
+
+const findFtdiSerialPort = function () {
+  let ret = new Promise((resolve, reject) => {
+  let success = false;
+  for (let i = 0; i < 9; i ++) {
+      let fileName = '/dev/ttyUSB' + i;
+      console.log('Try to check if ' + fileName);
+      stats = fs.statSync(fileName);
+      if (stats.isCharacterDevice()) {
+        console.log('Found FTDI device ' + fileName);
+        resolve(fileName);
+        success = true;
+        break;
+     } else {
+        console.log('File ' + fileName + ' does not seem suitable');
+     }
+    if (! success) {
+      console.log('Could not find FTDI device');
+      reject();
+    }
   }
+  });
+  return ret;
 }
 
-// let readEvent = new ReadRfidEvent();
-
 // Global objects
-const rfidReader = new SerialPort('/dev/ttyUSB0', { autoOpen: false });
-let expressServer = express();
-let httpServer = http.createServer(expressServer);
-let websocketServer = socketio(httpServer, {
+var rfidReader = undefined;
+var lineStream = undefined;
+
+const expressServer = express();
+const httpServer = http.createServer(expressServer);
+const websocketServer = socketio(httpServer, {
   path: '/pubsub',
 });
+
 httpServer.listen(WEBSOCKET_PORT, function() {
-  console.log('listening on port ' + WEBSOCKET_PORT);
+  console.log('Listening on port ' + WEBSOCKET_PORT);
 });
-
-// websocketServer.listen(WEBSOCKET_PORT);
-
-// let websocketServer = socketio('localhosocket ', WEBSOCKET_PORT, {
-//   path: '/pubsub',
-// });
-
-rfidReader.open(function (err) {
-  if (err) {
-    return console.log('Error opening port: ', err.message);
-  }
-
-  // Because there's no callback to write, write errors will be emitted on the port:
-  rfidReader.write('main screen turn on');
-})
-
-// The open event is always emitted
-rfidReader.on('open', function() {
-  // open logic
-  console.log('Opened rfid reader.');
-});
-
-// // Read data that is available but keep the stream in "paused mode"
-// rfidReader.on('readable', function () {
-//   let data = rfidReader.read();
-//   console.log('Data:', data);
-//   // readEvent.onReadSomeRfid(data);
-//   let rfidData = data;
-// });
-// 
-// // Switches the port into "flowing mode"
-// rfidReader.on('data', function (data) {
-//   console.log('Data:', data);
-// })
 
 // Pipe the data into another stream (like a parser or standard out)
 const parserReadline = new ParserReadline();
-const lineStream = rfidReader.pipe(parserReadline);
 
 parserReadline.on('data', function (line) {
   console.log('RFID data:', line);
-  redisClient.set("tag", line);
+  // redisClient.set("tag", line);
   let tagValue = line.replace(/[\W_]+/g, ''); // Remove characters that are not word-characters
   websocketServer.emit('tag', tagValue);
 });
 
-// websocketServer.on('connection', function (socket) {
-//   // socket.broadcast.emit('user connected');
-//   console.log('websocket client connected');
-// 
-//   socket.on('message', function () {
-//     // Nothing to do
-//     console.log('websocket: received message from client.');
-//   });
-//   socket.on('disconnect', function () {
-//     console.log('websocket client disconnected');
-//   });
-// 
-//   readEvent.on('read', (data) => {
-//     console.log('broadcast some data to all websocket clients');
-//     socket.broadcast.emit(data);
-//   });
-// });
+findFtdiSerialPort().then(function(ftdiDevice) {
+  rfidReader = new SerialPort(ftdiDevice, { autoOpen: false });
+  rfidReader.open(function (err) {
+    if (err) {
+      return console.log('Error opening port: ', err.message);
+    }
+    // Because there's no callback to write, write errors will be emitted on the port:
+    // rfidReader.write('main screen turn on');
+  });
 
-// httpServer.listen(WEBSOCKET_PORT, function () {
-//   console.log('websocket server listening on port ' + WEBSOCKET_PORT);
-//   console.log('ws://localhost:' + WEBSOCKET_PORT + '/websocket');
-// });
+  // The open event is always emitted
+  rfidReader.on('open', function() {
+    // open logic
+    console.log('Opened RFID reader.');
+  });
+
+  lineStream = rfidReader.pipe(parserReadline);
+}).catch(function() {
+  console.log("Failed to open a FTDI device.");
+});
 
