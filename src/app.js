@@ -3,6 +3,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import io from 'socket.io-client';
+import OneHundredSlider from './components/OneHundredSlider';
+import LanguageSwitcher from './components/LanguageSwitcher';
+
+const sliderMarks = [
+  { value: 0, },
+  { value: 10, },
+  { value: 20, },
+  { value: 30, },
+  { value: 40, },
+  { value: 50, },
+  { value: 60, },
+  { value: 70, },
+  { value: 80, },
+  { value: 90, },
+  { value: 100, },
+];
 
 /**
  * The main App component.
@@ -44,8 +60,11 @@ class App extends React.Component {
   render() {
     return (
       <div id="root">
-        <h1>Hello</h1>
+        <LanguageSwitcher />
         <pre>{ this.state.lastTagRead }</pre>
+        <p>Croyez-vous que de meilleurs investissements dans les institutions suivantes sont importantes dans la réduction du taux de criminalité?</p>
+        <br />
+        <OneHundredSlider aria-label="More or less" defaultValue={50} marks={sliderMarks} valueLabelDisplay="on" />
       </div>
      );
   }
