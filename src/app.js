@@ -43,7 +43,7 @@ class App extends React.Component {
 
   render() {
     return (
-      <div className="root">
+      <div id="root">
         <h1>Hello</h1>
         <pre>{ this.state.lastTagRead }</pre>
       </div>
