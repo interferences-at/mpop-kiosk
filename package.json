@@ -4,7 +4,7 @@
   "description": "Bornes avec les questionnaires - projet MPOP",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --passWithNoTests",
     "start": "./node_modules/.bin/electron .",
     "dev": "NODE_ENV=development ./node_modules/.bin/electron .",
     "watch": "./scripts/watch.sh",
@@ -38,6 +38,7 @@
     "electron": "^7.1.3",
     "express": "^4.17.1",
     "http": "0.0.0",
+    "jest": "^24.9.0",
     "react": "^16.12.0",
     "redis": "^2.8.0",
     "serialport": "^8.0.5",
