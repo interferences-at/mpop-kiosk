@@ -15,3 +15,7 @@ npm run build
 npm start
 ```
 
+## Developer notes
+
+See HACKING.md
+
