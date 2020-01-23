@@ -5,6 +5,9 @@ import ReactDOM from 'react-dom';
 import io from 'socket.io-client';
 import OneHundredSlider from './components/OneHundredSlider';
 import LanguageSwitcher from './components/LanguageSwitcher';
+//import remote from 'electron';
+
+
 
 const sliderMarks = [
   { value: 0, },
@@ -30,6 +33,9 @@ class App extends React.Component {
       lastTagRead: ' -- '
     };
     this.websocketClient = undefined;
+
+    const MPOP_MODE = window.MPOP_MODE;
+    console.log('MPOP_MODE : ' + MPOP_MODE);
   }
 
   setupWebsocketClient() {

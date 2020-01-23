@@ -12,6 +12,7 @@ sudo apt install nodejs
 ```
 npm install
 npm run build
+cp .env.default .env
 npm start
 ```
 

@@ -6,7 +6,10 @@
 // process.
 
 const electron = require('electron');
+const remote = require('electron').remote;
 const currentWindow = electron.remote.getCurrentWindow();
+
+window.MPOP_MODE = currentWindow.MPOP_MODE;
 
 // const setWindowFullscreen = (value) => {
 //   currentWindow.setFullScreen(value);
